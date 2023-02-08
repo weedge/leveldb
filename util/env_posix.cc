@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <dirent.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <sys/mman.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #include <atomic>
 #include <cerrno>
 #include <cstddef>
@@ -19,17 +9,27 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
+#include <fcntl.h>
 #include <limits>
+#include <pthread.h>
 #include <queue>
 #include <set>
 #include <string>
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <thread>
 #include <type_traits>
+#include <unistd.h>
 #include <utility>
 
 #include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "leveldb/status.h"
+
 #include "port/port.h"
 #include "port/thread_annotations.h"
 #include "util/env_posix_test_helper.h"
@@ -69,6 +69,10 @@ Status PosixError(const std::string& context, int error_number) {
 // Currently used to limit read-only file descriptors and mmap file usage
 // so that we do not run out of file descriptors or virtual memory, or run into
 // kernel performance problems for very large databases.
+// 限制资源使用以避免耗尽的Helper类。
+// 当前用于限制只读文件描述符和mmap文件的使用
+// 这样我们就不会用光文件描述符或虚拟内存，或者运行到
+// 大型数据库的内核性能问题。
 class Limiter {
  public:
   // Limit maximum number of resources to |max_acquires|.
@@ -468,6 +472,9 @@ class PosixFileLock : public FileLock {
 // same process.
 //
 // Instances are thread-safe because all member data is guarded by a mutex.
+// 跟踪PosixEnv::LockFile()锁定的文件。
+// 我们维护一个单独的集合，而不是依赖于fcntl(F_SETLK)，因为cntl(F_SETLK)不提供任何保护，防止来自同一进程的多次使用。
+// 实例是线程安全的，因为所有成员数据都由互斥锁保护。
 class PosixLockTable {
  public:
   bool Insert(const std::string& fname) LOCKS_EXCLUDED(mu_) {

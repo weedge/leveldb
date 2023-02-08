@@ -9,10 +9,16 @@
 // environments, the macros receive empty definitions.
 // Usage documentation: https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
 
+// Macros documentation: https://gcc.gnu.org/onlinedocs/cpp/Macros.html#Macros
+
 #if !defined(THREAD_ANNOTATION_ATTRIBUTE__)
 
 #if defined(__clang__)
 
+// 编译器属性指令__attribute__用于向编译器描述特殊的标识、检查分析或优化，黑魔法系列。。
+// __attribute__(x)
+// know more:
+// https://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html#Attribute-Syntax
 #define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
 #else
 #define THREAD_ANNOTATION_ATTRIBUTE__(x)  // no-op
@@ -21,10 +27,12 @@
 #endif  // !defined(THREAD_ANNOTATION_ATTRIBUTE__)
 
 #ifndef GUARDED_BY
+// https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#guarded-by-c-and-pt-guarded-by-c
 #define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
 #endif
 
 #ifndef PT_GUARDED_BY
+// https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#guarded-by-c-and-pt-guarded-by-c
 #define PT_GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
 #endif
 

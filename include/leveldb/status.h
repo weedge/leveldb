@@ -21,6 +21,9 @@
 
 namespace leveldb {
 
+// 状态封装操作的结果。它可以指示成功，也可以指示带有相关错误消息的错误。
+// 多个线程可以在没有外部同步的情况下调用一个Status上的const方法，
+// 但是如果任何线程都可以调用非const方法，那么访问同一个Status的所有线程都必须使用外部同步。
 class LEVELDB_EXPORT Status {
  public:
   // Create a success status.
